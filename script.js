@@ -257,5 +257,43 @@ setTimeout(() => {
     '%cEcossistema criativo · Angola',
     'font-size:12px;color:#666;padding:2px 16px;'
   );
+   /* RESPONSIVO MENU MOBILE */
+@media (max-width: 768px) {
+
+  .nav-hamburger {
+    display: flex;
+  }
+
+  .nav-menu {
+    position: fixed;
+    top: var(--nav-h);
+    left: 0;
+    width: 100%;
+    background: var(--black);
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 2rem;
+    gap: 1.5rem;
+
+    transform: translateY(-120%);
+    opacity: 0;
+    transition: all 0.4s ease;
+  }
+
+  .nav-menu.open {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .nav-list {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .nav-link {
+    width: 100%;
+  }
+
+}
 
 });
