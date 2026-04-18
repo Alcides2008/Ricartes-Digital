@@ -257,3 +257,5 @@ setTimeout(() => {
     '%cEcossistema criativo · Angola',
     'font-size:12px;color:#666;padding:2px 16px;'
   );
+
+});
