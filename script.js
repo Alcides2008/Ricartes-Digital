@@ -1,43 +1,45 @@
 /* ═══════════════════════════════════════════════════
-   RICARTES DIGITAL — script.js
-   ═══════════════════════════════════════════════════ */
+   RICARTES DIGITAL — script.js (FIXED)
+══════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ── 1. CUSTOM CURSOR ──────────────────────────── */
-  const cur     = document.getElementById('cur');
+  const cur = document.getElementById('cur');
   const curRing = document.getElementById('cur-ring');
   let mx = 0, my = 0, rx = 0, ry = 0;
 
   document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
+    mx = e.clientX;
+    my = e.clientY;
     cur.style.left = mx + 'px';
-    cur.style.top  = my + 'px';
+    cur.style.top = my + 'px';
   });
 
   (function animRing() {
     rx += (mx - rx) * 0.12;
     ry += (my - ry) * 0.12;
     curRing.style.left = rx + 'px';
-    curRing.style.top  = ry + 'px';
+    curRing.style.top = ry + 'px';
     requestAnimationFrame(animRing);
   })();
 
-  document.querySelectorAll('a, button, .pitem, .feature-card, .mcard, .module-card, .srv-card').forEach(el => {
-    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-big'));
-    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-big'));
-  });
+  document.querySelectorAll('a, button, .pitem, .feature-card, .mcard, .module-card, .srv-card')
+    .forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-big'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-big'));
+    });
 
 
   /* ── 2. SPA NAVIGATION ─────────────────────────── */
   const PAGES = {
-    'home':         'page-home',
-    'mentorias':    'page-mentorias',
+    home: 'page-home',
+    mentorias: 'page-mentorias',
     'zero-digital': 'page-zero-digital',
     'design-start': 'page-design-start',
-    'programacao':  'page-programacao',
-    'portfolio':    'page-portfolio',
-    'creative':     'page-creative',
+    programacao: 'page-programacao',
+    portfolio: 'page-portfolio',
+    creative: 'page-creative',
   };
 
   function getPageFromHash() {
@@ -45,92 +47,68 @@ document.addEventListener('DOMContentLoaded', () => {
     return PAGES[hash] ? hash : 'home';
   }
 
+  function updateNavActive(pageKey) {
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const lp = link.dataset.page;
+      link.classList.toggle(
+        'active',
+        lp === pageKey ||
+        (pageKey === 'zero-digital' && lp === 'mentorias') ||
+        (pageKey === 'design-start' && lp === 'mentorias') ||
+        (pageKey === 'programacao' && lp === 'mentorias')
+      );
+    });
+  }
+
   function navigateTo(pageKey, pushState = true) {
     const targetId = PAGES[pageKey];
     if (!targetId) return;
-// Depois de navigateTo(...)
-setTimeout(() => {
-  triggerReveal(target);
-}, 100);
-    // Hide all pages & remove active (stops anim-up on hidden pages)
+
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
     document.querySelectorAll('.page').forEach(p => {
       p.classList.remove('active');
-      // Reset anim-up so they replay on re-visit
+
       p.querySelectorAll('.anim-up').forEach(el => {
         el.style.animation = 'none';
-        el.offsetHeight; // force reflow
+        el.offsetHeight;
         el.style.animation = '';
       });
     });
 
-    // Show target
-    const target = document.getElementById(targetId);
-    if (!target) return;
     target.classList.add('active');
     target.classList.add('entering');
+
     setTimeout(() => target.classList.remove('entering'), 600);
 
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0 });
 
-    // Update URL
     if (pushState) {
       history.pushState({ page: pageKey }, '', '#' + pageKey);
     }
 
-    // Update nav active state
     updateNavActive(pageKey);
 
-    // Re-trigger reveal animations for new page
-    triggerReveal(target);
+    setTimeout(() => {
+      triggerReveal(target);
+    }, 100);
 
-    // Re-trigger counters if navigating to home
     if (pageKey === 'home') {
       triggerCounters(target);
     }
   }
 
-  function updateNavActive(pageKey) {
-    document.querySelectorAll('.nav-link').forEach(link => {
-      const lp = link.dataset.page;
-      link.classList.toggle('active', lp === pageKey || (pageKey === 'zero-digital' && lp === 'mentorias') || (pageKey === 'design-start' && lp === 'mentorias') || (pageKey === 'programacao' && lp === 'mentorias'));
-    });
-  }
 
-  // Handle all nav clicks
-  document.addEventListener('click', e => {
-    const link = e.target.closest('[data-page]');
-    if (!link) return;
-    const pageKey = link.dataset.page;
-    if (!PAGES[pageKey]) return;
-    e.preventDefault();
-    navigateTo(pageKey);
-    // Close mobile menu
-    navMenu.classList.remove('open');
-    hamburger.classList.remove('open');
-  });
-
-  // Handle browser back/forward
-  window.addEventListener('popstate', e => {
-    const pageKey = e.state?.page || getPageFromHash();
-    navigateTo(pageKey, false);
-  });
-
-  // Initial load
-  const initialPage = getPageFromHash();
-  navigateTo(initialPage, false);
-
-
-  /* ── 3. MOBILE HAMBURGER ───────────────────────── */
+  /* ── 3. MOBILE MENU (IMPORTANTE: ANTES DO CLICK) ── */
   const hamburger = document.getElementById('hamburger');
-  const navMenu   = document.getElementById('nav-menu');
+  const navMenu = document.getElementById('nav-menu');
 
   hamburger.addEventListener('click', () => {
     hamburger.classList.toggle('open');
     navMenu.classList.toggle('open');
   });
 
-  // Close on outside click
   document.addEventListener('click', e => {
     if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) {
       navMenu.classList.remove('open');
@@ -139,14 +117,42 @@ setTimeout(() => {
   });
 
 
-  /* ── 4. NAVBAR SCROLL STYLE ────────────────────── */
+  /* ── 4. NAV CLICK ─────────────────────────────── */
+  document.addEventListener('click', e => {
+    const link = e.target.closest('[data-page]');
+    if (!link) return;
+
+    const pageKey = link.dataset.page;
+    if (!PAGES[pageKey]) return;
+
+    e.preventDefault();
+    navigateTo(pageKey);
+
+    navMenu.classList.remove('open');
+    hamburger.classList.remove('open');
+  });
+
+
+  /* ── 5. BACK/FORWARD ───────────────────────────── */
+  window.addEventListener('popstate', e => {
+    const pageKey = e.state?.page || getPageFromHash();
+    navigateTo(pageKey, false);
+  });
+
+
+  /* ── 6. INITIAL LOAD ───────────────────────────── */
+  navigateTo(getPageFromHash(), false);
+
+
+  /* ── 7. NAV SCROLL ─────────────────────────────── */
   const nav = document.getElementById('nav');
+
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 50);
   }, { passive: true });
 
 
-  /* ── 5. SCROLL REVEAL ──────────────────────────── */
+  /* ── 8. REVEAL ─────────────────────────────────── */
   const revealObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -154,45 +160,41 @@ setTimeout(() => {
         revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' });
+  });
 
   function triggerReveal(container) {
-    // Reset all reveal elements in this page
     container.querySelectorAll('.reveal').forEach(el => {
       el.classList.remove('in');
       revealObserver.observe(el);
     });
-    // Elements already in viewport should trigger immediately
-    setTimeout(() => {
-      container.querySelectorAll('.reveal:not(.in)').forEach(el => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight) {
-          el.classList.add('in');
-          revealObserver.unobserve(el);
-        }
-      });
-    }, 80);
   }
 
 
-  /* ── 6. COUNTERS ───────────────────────────────── */
+  /* ── 9. COUNTERS ──────────────────────────────── */
   const counterObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
       animCounter(entry.target);
       counterObserver.unobserve(entry.target);
     });
-  }, { threshold: 0.3 });
+  });
 
   function animCounter(el) {
     const target = parseInt(el.dataset.n);
-    const sfx    = el.dataset.sfx || '';
+    const sfx = el.dataset.sfx || '';
     let n = 0;
+
     const step = target / 60;
+
     const timer = setInterval(() => {
       n += step;
-      if (n >= target) { el.textContent = target + sfx; clearInterval(timer); }
-      else el.textContent = Math.floor(n) + sfx;
+
+      if (n >= target) {
+        el.textContent = target + sfx;
+        clearInterval(timer);
+      } else {
+        el.textContent = Math.floor(n) + sfx;
+      }
     }, 18);
   }
 
@@ -203,11 +205,8 @@ setTimeout(() => {
     });
   }
 
-  // Always init counters on home page
-  triggerCounters(document.getElementById('page-home'));
 
-
-  /* ── 7. TICKER DUPLICATE ───────────────────────── */
+  /* ── 10. TICKER ──────────────────────────────── */
   document.querySelectorAll('.ticker-track').forEach(track => {
     if (track.dataset.duped) return;
     track.parentElement.appendChild(track.cloneNode(true));
@@ -215,47 +214,39 @@ setTimeout(() => {
   });
 
 
-  /* ── 8. PORTFOLIO FILTERS ──────────────────────── */
+  /* ── 11. PORTFOLIO FILTER ─────────────────────── */
   document.addEventListener('click', e => {
     const btn = e.target.closest('.fbtn');
     if (!btn) return;
 
-    const grid = btn.closest('.section')?.querySelector('#portfolio-grid') ||
-                 btn.closest('.section')?.querySelector('.masonry');
+    const grid = document.querySelector('.masonry');
     if (!grid) return;
 
-    btn.closest('.filters').querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     const f = btn.dataset.f;
+
     grid.querySelectorAll('.pitem').forEach(item => {
       const show = f === 'all' || item.dataset.cat === f;
-      item.style.opacity   = show ? '1' : '0.12';
-      item.style.transform = show ? '' : 'scale(0.97)';
-      item.style.transition = 'opacity .4s, transform .4s';
+      item.style.opacity = show ? '1' : '0.15';
       item.style.pointerEvents = show ? 'auto' : 'none';
     });
   });
 
 
-  /* ── 9. HERO BLOB PARALLAX ─────────────────────── */
+  /* ── 12. PARALLAX ─────────────────────────────── */
   const blobs = document.querySelectorAll('.hero-blob');
+
   window.addEventListener('scroll', () => {
     const y = window.scrollY;
+
     blobs.forEach((b, i) => {
       b.style.transform = `translateY(${y * (0.08 + i * 0.04)}px)`;
     });
-  }, { passive: true });
+  });
 
 
-  /* ── 10. CONSOLE WATERMARK ─────────────────────── */
-  console.log(
-    '%c✦ Ricartes Digital',
-    'font-size:18px;font-weight:800;color:#F5D000;background:#080808;padding:8px 16px;border-radius:4px;'
-  );
-  console.log(
-    '%cEcossistema criativo · Angola',
-    'font-size:12px;color:#666;padding:2px 16px;'
-  );
-
+  /* ── CONSOLE ─────────────────────────────────── */
+  console.log('%c✦ Ricartes Digital', 'font-size:18px;font-weight:800;color:#F5D000;background:#080808;padding:8px 16px;border-radius:4px;');
 });
